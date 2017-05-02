@@ -6,10 +6,16 @@ stdout          equ     1
 endl			equ		'\n'
 ends 			equ		0
 
+;Объявляем используемые внешние функции из libc
+extern exit
+extern puts
+extern scanf
+extern printf
+
 section .data
-	firstCoordsMsg 		db 'Enter first coords: \n'
+	firstCoordsMsg 		db 'Enter first coords: ', 0
 	lenFirstCoordsMsg 	equ $-firstCoordsMsg
-	secondCoordsMsg 	db 'Enter second coords: \n'
+	secondCoordsMsg 	db 'Enter second coords: ', 0
 	lenSecondCoordsMsg 	equ $-secondCoordsMsg
 
 section .bss
@@ -21,11 +27,11 @@ section .bss
 	numString: 			resb 256
 
 section .text
-	global _start
+	global main
 
 ; @param1: char* - string
 ; @return: int   - length string
-read_coords:
+read_str:
 	mov  [i], 0
 	pop  rcx
 .read_char:
@@ -49,7 +55,28 @@ read_coords:
 	mov  rax, [i]
 	ret
 
-_start:
+; @param2: char* - string
+; @param3: int   - length string
+; @return: int
+str_to_int:
+	pop  rbx							; rbx - point to char
+	pop  rcx							; rcx - counter = len
+.loop1:
+	push 10
+	dec  rcx							; length-1
+	push rcx
+	add  rcx
+	call pow
+
+	sub  [ebx], 42						; sub char '0'
+	mul  [rbx], rax						; curr_char*10^(len-i)
+
+	add  rbx							; next char
+	dec  rcx
+	loop .loop1
+	ret
+
+main:
 	mov  [coordx1], 0
 	mov  [coordy1], 0
 	mov  [coordx2], 0
@@ -62,13 +89,9 @@ _start:
 	int  80h							; call kernel
 
 	push numString
-	call read_coords
+	call read_str 						; rax - length string
 
 	mov  rcx, rax
-str_to_int:
-	;;;
-	dec  rcx
-	loop str_to_int
 
 
 	mov  rax, 4							; system call number (sys_write)

@@ -62,7 +62,8 @@ is_progression:
 	div  rbx					; r8 = rax/rbx
 	mov  r8, rax
 .find_prog_loop:
-	mov  r11, r10				; r11 = imax-i
+	mov  r11, r10
+	
 	sub  r11, rcx
 
 	arr  r11					; rbx = arr[curr]
